@@ -1,0 +1,34 @@
+{
+    "name": "@repo/types",
+    "version": "1.0.0",
+    "exports": {
+        "./*": {
+            "import": {
+                "types": "./*.ts"
+            },
+            "require": {
+                "types": "./*.ts"
+            }
+        }
+    },
+    "scripts": {
+        "lint": "eslint \"**/*.ts*\"",
+        "test": "echo 'all packages:bin tests passed!'"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "^3.1.0",
+        "@eslint/js": "^9.8.0",
+        "@repo/eslint-config": "*",
+        "@repo/prettier-config": "*",
+        "@repo/tsconfig": "*",
+        "typescript": "^5.5.3"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "concurrently": "^8.2.2",
+        "rimraf": "^6.0.1"
+    }
+}

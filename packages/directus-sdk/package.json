@@ -1,0 +1,87 @@
+{
+    "name": "@repo/directus-sdk",
+    "version": "1.0.0",
+    "main": "index.js",
+    "exports": {
+        "./schema": "./cache/schema.json",
+        ".": {
+            "import": {
+                "types": "./index.ts",
+                "default": "./index.ts"
+            },
+            "require": {
+                "types": "./index.ts",
+                "default": "./index.ts"
+            }
+        },
+        "./utils": {
+            "import": {
+                "types": "./utils.ts",
+                "default": "./utils.ts"
+            },
+            "require": {
+                "types": "./utils.ts",
+                "default": "./utils.ts"
+            }
+        },
+        "./client": {
+            "import": {
+                "types": "./client.ts",
+                "default": "./client.ts"
+            },
+            "require": {
+                "types": "./client.ts",
+                "default": "./client.ts"
+            }
+        },
+        "./indirectus/types/*": {
+            "import": {
+                "types": "./indirectus/types/*",
+                "default": "./indirectus/types/*"
+            },
+            "require": {
+                "types": "./indirectus/types/*",
+                "default": "./indirectus/types/*"
+            }
+        },
+        "./commands/*": {
+            "import": {
+                "types": "./commands/*",
+                "default": "./commands/*"
+            },
+            "require": {
+                "types": "./commands/*",
+                "default": "./commands/*"
+            }
+        }
+    },
+    "scripts": {
+        "pretify": "npx prettier ./**/*.{ts,tsx,js,jsx,css} --write --no-error-on-unmatched-pattern",
+        "type-check": "tsc --noEmit",
+        "lint": "eslint \"**/*.ts*\"",
+        "test": "echo 'all packages:ui tests passed!'",
+        "init": "npm run generate:directus:types",
+        "build": "npm run generate:directus:types",
+        "clean": "rimraf indirectus",
+        "generate:directus:types": "envcli \"wait-port $:{NEXT_PUBLIC_API_URL}$:{API_PING_PATH} && n0safe-indirectus sdk generate --url $:{NEXT_PUBLIC_API_URL} --token $:{API_ADMIN_TOKEN} --dir ./indirectus --outputDir ./indirectus -- safe\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "@eslint/eslintrc": "^3.1.0",
+        "@eslint/js": "^9.8.0",
+        "@n0safe/envcli": "^1.0.2",
+        "@repo/eslint-config": "*",
+        "@repo/prettier-config": "*",
+        "@repo/tsconfig": "*",
+        "typescript": "^5.5.3"
+    },
+    "dependencies": {
+        "@directus/sdk": "^17.0.0",
+        "@n0safe/indirectus": "^1.5.5",
+        "rimraf": "^6.0.1",
+        "wait-port": "^1.1.0"
+    }
+}

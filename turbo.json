@@ -1,0 +1,61 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "ui": "tui",
+    "globalDependencies": ["**/.env.*local", "**/.env", ".env.local"],
+    "globalPassThroughEnv": [".env.local"],
+    "globalEnv": ["NEXT_PUBLIC_API_URL", "API_PING_PATH", "API_ADMIN_TOKEN", "TEMP_APP_NEXTAUTH_URL"],
+    "tasks": {
+        "init": {
+            "dependsOn": ["^init", "clean"],
+            "outputs": ["dist/**"],
+            "cache": false
+        },
+        "build:force": {
+            "dependsOn": ["^build:force"],
+            "cache": false
+        },
+        "generate:directus:types": {
+            "cache": false
+        },
+        "analyze": {
+            "dependsOn": ["^analyze"],
+            "cache": false
+        },
+        "build": {
+            "dependsOn": ["^build", "build:force"],
+            "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+        },
+        "build:no:check": {
+            "dependsOn": ["^build:no:check"],
+            "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+        },
+        "lint": {
+            "cache": false
+        },
+        "pretify": {
+            "dependsOn": ["^lint"],
+            "cache": false
+        },
+        "web#test": {
+            "dependsOn": ["web#build"]
+        },
+        "test": {
+            "dependsOn": ["^build"]
+        },
+        "check-types": {},
+        "dev": {
+            "cache": false,
+            "persistent": true
+        },
+        "start": {
+            "cache": false,
+            "persistent": true
+        },
+        "start:local": {
+            "persistent": true
+        },
+        "clean": {
+            "cache": false
+        }
+    }
+}
