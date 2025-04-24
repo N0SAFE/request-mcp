@@ -23,6 +23,6 @@
         ".next/types/**/*.ts",
         "next.config.js",
         "next-sitemap.config.js"
-    ],
+, "../mcp/mcp.ts"    ],
     "exclude": ["node_modules"]
 }

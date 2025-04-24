@@ -2,7 +2,6 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import express, { Request, Response } from "express";
 import bodyParser from "body-parser";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -13,14 +12,6 @@ import {
 // Flag to enable only GET operations (read-only mode) - Applies to tool listing
 const READ_ONLY_MODE: boolean = process.env.READ_ONLY_MODE === "true" || false;
 
-// --- Webhook and Pending Request Management ---
-const app = express();
-const expressPort = process.env.WEBHOOK_PORT || 3504;
-const dashboardApiUrl = `http://localhost:${process.env.PORT || 3000}/api/mcp-requests`; // URL for the Next.js API
-
-// Use bodyParser middleware *before* defining routes
-app.use(bodyParser.json());
-
 // --- Internal map to link requestId to its resolve/reject functions ---
 // This is still needed to handle the Promise returned to the MCP SDK
 interface InternalPendingPromise {
@@ -29,64 +20,8 @@ interface InternalPendingPromise {
   timestamp: number; // Keep timestamp for internal timeout
 }
 const internalPendingPromises: Map<string, InternalPendingPromise> = new Map();
-const REQUEST_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes timeout for webhook response
-
-// Webhook endpoint to receive responses (forwarded from the dashboard API)
-app.post("/webhook/respond", (req: Request, res: Response) => {
-  const { requestId, responseData, error } = req.body;
-
-  if (!requestId) {
-    res.status(400).json({ error: "Missing requestId" });
-    return;
-  }
-
-  const pendingPromise = internalPendingPromises.get(requestId);
-
-  if (!pendingPromise) {
-    console.warn(
-      `Webhook: Received response for unknown or timed out internal promise: ${requestId}`
-    );
-    // Don't send 404, the dashboard API already handled the primary response.
-    // Just acknowledge receipt.
-    res.status(200).json({ message: "Response processed (promise not found or timed out)." });
-    return;
-  }
-
-  if (error) {
-    console.log(`Webhook: Received error for requestId ${requestId}:`, error);
-    pendingPromise.reject(
-      new Error(typeof error === "string" ? error : JSON.stringify(error))
-    );
-  } else {
-    console.log(`Webhook: Received responseData for requestId ${requestId}`);
-    pendingPromise.resolve(responseData);
-  }
-
-  internalPendingPromises.delete(requestId); // Clean up the completed promise
-  res.status(200).json({ message: "Response processed by webhook" });
-});
-
-// Periodically clean up timed-out internal promises
-setInterval(() => {
-  const now = Date.now();
-  internalPendingPromises.forEach((promise, id) => {
-    if (now - promise.timestamp > REQUEST_TIMEOUT_MS) {
-      console.warn(`Internal Promise ${id} timed out.`);
-      promise.reject(
-        new Error(`Request timed out after ${REQUEST_TIMEOUT_MS / 1000} seconds.`)
-      );
-      internalPendingPromises.delete(id);
-    }
-  });
-}, 60 * 1000); // Check every minute
 
 // --- MCP Server Setup ---
-
-// Server configuration interface
-interface ServerConfig {
-  name: string;
-  version: string;
-}
 
 interface ServerCapabilities {
   capabilities: {

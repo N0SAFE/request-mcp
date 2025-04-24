@@ -5,10 +5,10 @@
       "id": "adding directus_roles",
       "items": [
         {
+          "description": "$t:admin_description",
+          "icon": "verified",
           "id": "04cb7ec5-beb0-4375-9b8f-ae52455b3aa0",
           "name": "Administrator",
-          "icon": "verified",
-          "description": "$t:admin_description",
           "parent": null,
           "children": []
         }
@@ -18,47 +18,156 @@
       "id": "adding creatingdirectus_policies",
       "items": [
         {
-          "id": "6cc2a2dc-8a6d-4fd0-8381-440adc86ecb3",
-          "name": "Administrator",
-          "icon": "verified",
-          "description": "$t:admin_description",
-          "ip_access": null,
-          "enforce_tfa": false,
           "admin_access": true,
-          "app_access": true
+          "app_access": true,
+          "description": "$t:admin_description",
+          "enforce_tfa": false,
+          "icon": "verified",
+          "id": "6cc2a2dc-8a6d-4fd0-8381-440adc86ecb3",
+          "ip_access": null,
+          "name": "Administrator"
         },
         {
-          "id": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
-          "name": "$t:public_label",
-          "icon": "public",
-          "description": "$t:public_description",
-          "ip_access": null,
-          "enforce_tfa": false,
           "admin_access": false,
-          "app_access": false
+          "app_access": false,
+          "description": "$t:public_description",
+          "enforce_tfa": false,
+          "icon": "public",
+          "id": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "ip_access": null,
+          "name": "$t:public_label"
         }
       ]
     },
     {
       "id": "adding directus_permissions",
-      "items": []
+      "items": [
+        {
+          "action": "read",
+          "collection": "request",
+          "fields": [
+            "*"
+          ],
+          "id": 1,
+          "permissions": null,
+          "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "presets": null,
+          "validation": null
+        },
+        {
+          "action": "read",
+          "collection": "request_container",
+          "fields": [
+            "*"
+          ],
+          "id": 2,
+          "permissions": null,
+          "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "presets": null,
+          "validation": null
+        },
+        {
+          "action": "read",
+          "collection": "request_container_children",
+          "fields": [
+            "*"
+          ],
+          "id": 3,
+          "permissions": null,
+          "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "presets": null,
+          "validation": null
+        },
+        {
+          "action": "update",
+          "collection": "request",
+          "fields": [
+            "*"
+          ],
+          "id": 4,
+          "permissions": null,
+          "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "presets": null,
+          "validation": null
+        },
+        {
+          "action": "update",
+          "collection": "request_container",
+          "fields": [
+            "*"
+          ],
+          "id": 5,
+          "permissions": null,
+          "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "presets": null,
+          "validation": null
+        },
+        {
+          "action": "update",
+          "collection": "request_container_children",
+          "fields": [
+            "*"
+          ],
+          "id": 6,
+          "permissions": null,
+          "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "presets": null,
+          "validation": null
+        },
+        {
+          "action": "create",
+          "collection": "request",
+          "fields": [
+            "*"
+          ],
+          "id": 7,
+          "permissions": null,
+          "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "presets": null,
+          "validation": null
+        },
+        {
+          "action": "create",
+          "collection": "request_container",
+          "fields": [
+            "*"
+          ],
+          "id": 8,
+          "permissions": null,
+          "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "presets": null,
+          "validation": null
+        },
+        {
+          "action": "create",
+          "collection": "request_container_children",
+          "fields": [
+            "*"
+          ],
+          "id": 9,
+          "permissions": null,
+          "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
+          "presets": null,
+          "validation": null
+        }
+      ]
     },
     {
       "id": "adding directus_access",
       "items": [
         {
           "id": "6e91490a-4b01-41a2-ab44-c71fd3fcc16d",
-          "role": "04cb7ec5-beb0-4375-9b8f-ae52455b3aa0",
-          "user": null,
           "policy": "6cc2a2dc-8a6d-4fd0-8381-440adc86ecb3",
-          "sort": null
+          "role": "04cb7ec5-beb0-4375-9b8f-ae52455b3aa0",
+          "sort": null,
+          "user": null
         },
         {
           "id": "9415a537-c902-4685-8989-834325bdbd6f",
-          "role": null,
-          "user": null,
           "policy": "abf8a154-5b1c-4a46-ac9c-7300570f4f17",
-          "sort": 1
+          "role": null,
+          "sort": 1,
+          "user": null
         }
       ]
     },
