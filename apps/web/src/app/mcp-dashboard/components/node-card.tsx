@@ -93,7 +93,8 @@ export const NodeCard: React.FC<NodeCardProps> = ({
             // Use the mutation directly to update the status
             mutation.mutate({
                 requestId: node.content.id,
-                responseData: undefined,
+                isContainer: true,
+                status: expectedStatus,
                 error: expectedStatus === 'error' ? 'Automatically set to error due to child status' : undefined,
             });
         }

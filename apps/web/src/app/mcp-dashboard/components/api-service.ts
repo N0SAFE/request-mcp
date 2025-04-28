@@ -34,3 +34,35 @@ export const submitResponse = async ({
         throw new Error(message)
     }
 }
+
+// Update the status of a container (not a request)
+export const submitContainerStatus = async ({
+    containerId,
+    status,
+    error,
+}: {
+    containerId: number
+    status: 'completed' | 'error'
+    error?: string
+}) => {
+    const payload: Partial<Collections.RequestContainer> = {
+        status,
+        errorMessage: error || undefined,
+    }
+    Object.keys(payload).forEach(
+        (key) =>
+            payload[key as keyof typeof payload] === undefined &&
+            delete payload[key as keyof typeof payload]
+    )
+    try {
+        const updatedItem = await directus.RequestContainers.update([containerId], payload)
+        return updatedItem[0]
+    } catch (sdkError: any) {
+        console.error('Directus SDK Error updating container:', sdkError)
+        const message =
+            sdkError.errors?.[0]?.message ||
+            sdkError.message ||
+            'Failed to update container via Directus SDK'
+        throw new Error(message)
+    }
+}
