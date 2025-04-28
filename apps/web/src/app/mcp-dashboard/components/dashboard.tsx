@@ -3,15 +3,29 @@
 import { useState, FormEvent } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { TooltipProvider } from '@repo/ui/components/shadcn/tooltip'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@repo/ui/components/shadcn/tabs'
+import { Input } from '@repo/ui/components/shadcn/input'
 import { useMcpData } from '@/contexts/McpDataContext'
-import { submitResponse } from './api-service'
+import { submitResponse, submitContainerStatus } from './api-service'
 import { NodeCard } from './node-card'
-import { getBadgeVariant } from './status-utils'
+import { getBadgeVariant, calculateContainerStatus } from './status-utils'
+import { useQueryState } from 'nuqs'
+import { Toaster } from '@repo/ui/components/shadcn/sonner'
+import { toast } from 'sonner'
 
 export function Dashboard() {
     const queryClient = useQueryClient()
     const [responses, setResponses] = useState<Record<number, { responseData?: any; error?: string }>>({})
     const [jsonError, setJsonError] = useState<Record<number, string | null>>({})
+    // --- Filtering, Search, and Tab State ---
+    const [tab, setTab] = useQueryState<'pending' | 'completed' | 'error'>('tab', {
+        defaultValue: 'pending',
+        history: 'replace',
+        parse: (v) => (v === 'completed' || v === 'error' ? v : 'pending'),
+        serialize: (v) => v,
+    })
+    const [search, setSearch] = useState('')
+    const [filter, setFilter] = useState('') // For future advanced filtering
 
     const {
         mcpRequestHierarchy,
@@ -24,9 +38,19 @@ export function Dashboard() {
     const mutation = useMutation<
         any,
         Error, 
-        { requestId: number; responseData?: any; error?: string }
+        { requestId: number; responseData?: any; error?: string; isContainer?: boolean; status?: 'completed' | 'error' }
     >({
-        mutationFn: submitResponse,
+        mutationFn: async (variables) => {
+            if (variables.isContainer && variables.status) {
+                return submitContainerStatus({
+                    containerId: variables.requestId,
+                    status: variables.status,
+                    error: variables.error,
+                })
+            } else {
+                return submitResponse(variables)
+            }
+        },
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['allMcpNodes'] })
             setResponses((prev) => {
@@ -38,11 +62,21 @@ export function Dashboard() {
                 ...prev,
                 [variables.requestId]: null,
             }))
+            toast.success(
+                variables.isContainer
+                    ? `Container #${variables.requestId} updated successfully.`
+                    : `Request #${variables.requestId} updated successfully.`
+            )
         },
         onError: (error, variables) => {
             console.error(
                 `Directus submission error for ${variables.requestId}:`,
                 error.message
+            )
+            toast.error(
+                variables.isContainer
+                    ? `Failed to update container #${variables.requestId}: ${error.message}`
+                    : `Failed to update request #${variables.requestId}: ${error.message}`
             )
         },
     })
@@ -83,6 +117,8 @@ export function Dashboard() {
                     requestId: nodeId,
                     responseData: undefined, 
                     error: responsePayload.error,
+                    isContainer: true,
+                    status: 'error',
                 })
             }
             return
@@ -115,6 +151,98 @@ export function Dashboard() {
     const isSubmitting = (nodeId: number) =>
         mutation.isPending && mutation.variables?.requestId === nodeId
 
+    // Helper: recursively filter/search nodes
+    // Use status-utils to get the real status for containers
+    function filterNodes(nodes: any[]): any[] {
+        // Helper: recursively flatten all nodes (including nested)
+        function flatten(nodes: any[]): any[] {
+            let result: any[] = []
+            for (const node of nodes) {
+                result.push(node)
+                if (node.type === 'container' && node.children) {
+                    result = result.concat(flatten(node.children))
+                }
+            }
+            return result
+        }
+        // If searching, flatten all nodes and filter by search, then group by top-level container/request
+        if (search) {
+            const allNodes = flatten(nodes)
+            const filtered = allNodes.filter((node: any) => {
+                const name = node.content.name?.toLowerCase() || ''
+                const desc = node.content.description?.toLowerCase() || ''
+                return (
+                    name.includes(search.toLowerCase()) ||
+                    desc.includes(search.toLowerCase())
+                )
+            })
+            // Show only top-level nodes that match, or that have descendants matching
+            function hasMatchingDescendant(node: any): boolean {
+                if (filtered.includes(node)) return true
+                if (node.type === 'container' && node.children) {
+                    return node.children.some(hasMatchingDescendant)
+                }
+                return false
+            }
+            return nodes
+                .filter(hasMatchingDescendant)
+                .map((node: any) => {
+                    if (node.type === 'container' && node.children) {
+                        return {
+                            ...node,
+                            children: filterNodes(node.children),
+                        }
+                    }
+                    return node
+                })
+        }
+        // Otherwise, filter by tab (status)
+        return nodes
+            .filter((node: any) => {
+                let status
+                if (node.type === 'container') {
+                    status = calculateContainerStatus(node)
+                } else {
+                    status = node.content.status
+                }
+                if (tab === 'pending' && status !== 'pending') return false
+                if (tab === 'completed' && status !== 'completed') return false
+                if (tab === 'error' && status !== 'error') return false
+                return true
+            })
+            .map((node: any) => {
+                if (node.type === 'container' && node.children) {
+                    return {
+                        ...node,
+                        children: filterNodes(node.children),
+                    }
+                }
+                return node
+            })
+    }
+    // Helper: get container status
+    function getContainerStatus(node) {
+        if (node.type === 'container') {
+            return getBadgeVariant === undefined ? node.content.status : getBadgeVariant(node.content.status)
+        }
+        return node.content.status
+    }
+    // Use the status calculation from status-utils for containers
+    function getTopLevelStatus(node) {
+        if (node.type === 'container') {
+            return getBadgeVariant === undefined ? node.content.status : getBadgeVariant(node.content.status)
+        }
+        return node.content.status
+    }
+    // Use the status calculation from status-utils for containers
+    function getStatus(node) {
+        if (node.type === 'container') {
+            return getBadgeVariant === undefined ? node.content.status : getBadgeVariant(node.content.status)
+        }
+        return node.content.status
+    }
+    // ---
+
     return (
         <TooltipProvider>
             <div className="container mx-auto min-h-screen p-4 pt-12 pb-10 md:pt-20">
@@ -125,43 +253,117 @@ export function Dashboard() {
                 </div>
 
                 <div className="mx-auto max-w-7xl">
-                    {isLoading && (
-                        <p className="text-muted-foreground text-center">
-                            Loading requests...
-                        </p>
-                    )}
-                    {isError && (
-                        <p className="text-center text-red-600 dark:text-red-400">
-                            Error loading requests: {queryError?.message}
-                        </p>
-                    )}
-                    {!isLoading && !isError && mcpRequestHierarchy.length === 0 && (
-                        <p className="text-muted-foreground text-center">
-                            No pending requests found.
-                        </p>
-                    )}
-                    {!isLoading && !isError && mcpRequestHierarchy.length > 0 && (
-                        <div className="space-y-6">
-                            {mcpRequestHierarchy.map((node) => (
-                                <NodeCard
-                                    key={node.content.id}
-                                    node={node}
-                                    responses={responses}
-                                    jsonError={jsonError}
-                                    handleResponseChange={handleResponseChange}
-                                    handleErrorChange={handleErrorChange}
-                                    handleSubmit={handleSubmit}
-                                    isSubmitting={isSubmitting}
-                                    getBadgeVariant={getBadgeVariant}
-                                    level={0}
-                                    allowRequestInput={true}
-                                    mutation={mutation}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    {/* Search and filter controls */}
+                    <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+                        <Input
+                            type="text"
+                            placeholder="Search by name or description..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="max-w-xs"
+                        />
+                    </div>
+                    <Tabs value={tab} onValueChange={value => setTab(value as typeof tab)} className="w-full">
+                        <TabsList>
+                            <TabsTrigger value="pending">In Progress</TabsTrigger>
+                            <TabsTrigger value="completed">Completed</TabsTrigger>
+                            <TabsTrigger value="error">Error</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="pending">
+                            {isLoading && (
+                                <p className="text-muted-foreground text-center">
+                                    Loading requests...
+                                </p>
+                            )}
+                            {isError && (
+                                <p className="text-center text-red-600 dark:text-red-400">
+                                    Error loading requests: {queryError?.message}
+                                </p>
+                            )}
+                            {!isLoading && !isError && filterNodes(mcpRequestHierarchy).length === 0 && (
+                                <p className="text-muted-foreground text-center">
+                                    No pending requests found.
+                                </p>
+                            )}
+                            {!isLoading && !isError && filterNodes(mcpRequestHierarchy).length > 0 && (
+                                <div className="space-y-6">
+                                    {filterNodes(mcpRequestHierarchy).map((node) => (
+                                        <NodeCard
+                                            key={node.content.id}
+                                            node={node}
+                                            responses={responses}
+                                            jsonError={jsonError}
+                                            handleResponseChange={handleResponseChange}
+                                            handleErrorChange={handleErrorChange}
+                                            handleSubmit={handleSubmit}
+                                            isSubmitting={isSubmitting}
+                                            getBadgeVariant={getBadgeVariant}
+                                            level={0}
+                                            allowRequestInput={true}
+                                            mutation={mutation}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </TabsContent>
+                        <TabsContent value="completed">
+                            {!isLoading && !isError && filterNodes(mcpRequestHierarchy).length === 0 && (
+                                <p className="text-muted-foreground text-center">
+                                    No completed requests found.
+                                </p>
+                            )}
+                            {!isLoading && !isError && filterNodes(mcpRequestHierarchy).length > 0 && (
+                                <div className="space-y-6">
+                                    {filterNodes(mcpRequestHierarchy).map((node) => (
+                                        <NodeCard
+                                            key={node.content.id}
+                                            node={node}
+                                            responses={responses}
+                                            jsonError={jsonError}
+                                            handleResponseChange={handleResponseChange}
+                                            handleErrorChange={handleErrorChange}
+                                            handleSubmit={handleSubmit}
+                                            isSubmitting={isSubmitting}
+                                            getBadgeVariant={getBadgeVariant}
+                                            level={0}
+                                            allowRequestInput={true}
+                                            mutation={mutation}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </TabsContent>
+                        <TabsContent value="error">
+                            {!isLoading && !isError && filterNodes(mcpRequestHierarchy).length === 0 && (
+                                <p className="text-muted-foreground text-center">
+                                    No error requests found.
+                                </p>
+                            )}
+                            {!isLoading && !isError && filterNodes(mcpRequestHierarchy).length > 0 && (
+                                <div className="space-y-6">
+                                    {filterNodes(mcpRequestHierarchy).map((node) => (
+                                        <NodeCard
+                                            key={node.content.id}
+                                            node={node}
+                                            responses={responses}
+                                            jsonError={jsonError}
+                                            handleResponseChange={handleResponseChange}
+                                            handleErrorChange={handleErrorChange}
+                                            handleSubmit={handleSubmit}
+                                            isSubmitting={isSubmitting}
+                                            getBadgeVariant={getBadgeVariant}
+                                            level={0}
+                                            allowRequestInput={true}
+                                            mutation={mutation}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </div>
+            <Toaster />
         </TooltipProvider>
     )
 }

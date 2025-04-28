@@ -13,6 +13,7 @@ import NextTopLoader from 'nextjs-toploader'
 import Validate from '@/lib/auth/validate'
 import Script from 'next/script'
 import { validateEnv } from '#/env'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 const fontSans = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -65,15 +66,17 @@ export default async function RootLayout({
                         >
                             <NextTopLoader />
                             <ReactQueryProviders>
-                                <Suspense
-                                    fallback={
-                                        <div className="flex h-screen w-screen items-center justify-center">
-                                            <Loader />
-                                        </div>
-                                    }
-                                >
-                                    {children}
-                                </Suspense>
+                                <NuqsAdapter>
+                                    <Suspense
+                                        fallback={
+                                            <div className="flex h-screen w-screen items-center justify-center">
+                                                <Loader />
+                                            </div>
+                                        }
+                                    >
+                                        {children}
+                                    </Suspense>
+                                </NuqsAdapter>
                             </ReactQueryProviders>
                         </ThemeProvider>
                     </Validate>
