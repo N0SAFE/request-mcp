@@ -90,59 +90,77 @@ export const McpDataProvider: React.FC<{ children: ReactNode }> = ({
         return data.containers.find((container) => container.id === id)
     }
 
-    const buildRequestHierarchy = (): McpRequestHierarchy[] => {
-        const hierarchy: McpRequestHierarchy[] = []
-        const requestMap = new Map<number, McpRequestHierarchy>()
-        const containerMap = new Map<number, McpRequestHierarchy>()
-        data?.containers.forEach((container) => {
-            containerMap.set(container.id, {
+    const mcpRequestHierarchy = useMemo(() => {
+        if (!data) return []
+        // Move buildRequestHierarchy inside useMemo to avoid dependency issues
+        const buildContainerHierarchy = (
+            container: ApplyFields<Collections.RequestContainer, ['*', { children: ['*'] }]>,
+            containers: ApplyFields<Collections.RequestContainer, ['*', { children: ['*'] }]>[],
+            requests: ApplyFields<Collections.Request>[]
+        ): McpRequestHierarchyContainer => {
+            return {
                 type: 'container',
                 content: container,
                 children: container.children
                     .map(({ item, collection }) => {
                         if (collection === 'request_container') {
-                            if (containerMap.has(Number(item))) {
-                                return containerMap.get(Number(item))!
+                            const childContainer = containers.find((c) => c.id === Number(item))
+                            if (childContainer) {
+                                return buildContainerHierarchy(childContainer, containers, requests)
                             }
-                            const container = data?.containers.find(
-                                (c) => c.id === Number(item)
-                            )!
-                            return {
-                                type: 'container' as const,
-                                content: container,
-                                children: [],
+                            return undefined
+                        }
+                        if (collection === 'request') {
+                            const request = requests.find((r) => r.id === Number(item))
+                            if (request) {
+                                return {
+                                    type: 'request' as const,
+                                    content: request,
+                                }
                             }
+                            return undefined
                         }
-                        const request = data?.requests.find(
-                            (r) => r.id === Number(item)
-                        )!
-                        const requestHierarchy = {
-                            type: 'request' as const,
-                            content: request,
-                        }
-                        requestMap.set(request.id, requestHierarchy)
-                        return requestHierarchy
+                        return undefined
                     })
-                    .filter(Boolean),
-            })
-        })
-        containerMap.forEach((container) => {
-            hierarchy.push(container)
-        })
-        data?.requests.forEach((request) => {
-            if (!requestMap.has(request.id)) {
-                const requestHierarchy = {
-                    type: 'request' as const,
-                    content: request,
-                }
-                hierarchy.push(requestHierarchy)
+                    .filter(Boolean) as McpRequestHierarchy[],
             }
-        })
-        return hierarchy
-    }
-
-    const mcpRequestHierarchy = useMemo(() => {
-        if (!data) return []
+        }
+        const buildRequestHierarchy = (): McpRequestHierarchy[] => {
+            const { containers, requests } = data
+            // Find root containers (not referenced as children by any other container)
+            const referencedContainerIds = new Set<number>()
+            containers.forEach((container) => {
+                container.children.forEach(({ item, collection }) => {
+                    if (collection === 'request_container') {
+                        referencedContainerIds.add(Number(item))
+                    }
+                })
+            })
+            const rootContainers = containers.filter((container) => !referencedContainerIds.has(container.id))
+            const hierarchy: McpRequestHierarchy[] = []
+            // Build hierarchy for root containers
+            rootContainers.forEach((container) => {
+                hierarchy.push(buildContainerHierarchy(container, containers, requests))
+            })
+            // Add requests that are not referenced by any container
+            const referencedRequestIds = new Set<number>()
+            containers.forEach((container) => {
+                container.children.forEach(({ item, collection }) => {
+                    if (collection === 'request') {
+                        referencedRequestIds.add(Number(item))
+                    }
+                })
+            })
+            requests.forEach((request) => {
+                if (!referencedRequestIds.has(request.id)) {
+                    hierarchy.push({
+                        type: 'request',
+                        content: request,
+                    })
+                }
+            })
+            return hierarchy
+        }
         return buildRequestHierarchy()
     }, [data])
 
