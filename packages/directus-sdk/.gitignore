@@ -1,1 +1,7 @@
 indirectus/**
+**/*.js
+**/*.js.*
+**/*.d.ts
+**/*.d.ts.*
+**/*.d.mts
+**/*.d.mts.*

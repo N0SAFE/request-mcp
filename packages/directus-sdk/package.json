@@ -62,8 +62,8 @@
         "test": "echo 'all packages:ui tests passed!'",
         "init": "npm run generate:directus:types",
         "build": "npm run generate:directus:types",
-        "clean": "rimraf indirectus",
-        "generate:directus:types": "envcli \"wait-port $:{NEXT_PUBLIC_API_URL}$:{API_PING_PATH} && n0safe-indirectus sdk generate --url $:{NEXT_PUBLIC_API_URL} --token $:{API_ADMIN_TOKEN} --dir ./indirectus --outputDir ./indirectus -- safe\""
+        "clean": "rimraf indirectus && rimraf --glob '{**/*.d.ts*(.*),**/*.mjs,**/*.d.mts*(.*),**/*.js*(.*)}'",
+        "generate:directus:types": "envcli \"wait-port $:{NEXT_PUBLIC_API_URL}$:{API_PING_PATH} && n0safe-indirectus sdk generate --url $:{NEXT_PUBLIC_API_URL} --token $:{API_ADMIN_TOKEN} --dir ./indirectus --outputDir ./indirectus -- safe\" && tsc --build --force"
     },
     "keywords": [],
     "author": "",

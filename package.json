@@ -29,6 +29,7 @@
         "ui:add": "dotenv -e .env -- npm run ui:add --workspace=@repo/ui --",
         "api": "dotenv -e .env -- npm run --workspace=api --",
         "web": "dotenv -e .env -- npm run --workspace=web --",
+        "mcp": "dotenv -e .env -- npm run --workspace=mcp --",
         "@repo/ui": "dotenv -e .env -- npm run --workspace=@repo/ui --",
         "@repo/types": "dotenv -e .env -- npm run --workspace=@repo/types --",
         "@repo/tsconfig": "dotenv -e .env -- npm run --workspace=@repo/tsconfig --",
