@@ -1,13 +1,16 @@
 {
-  "name": "mcp",
+  "name": "mcp-server-template",
   "version": "1.0.0",
-  "main": "index.js",
-  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./stdio": "./dist/bin/stdio.js",
+    "./sse": "./dist/bin/sse.js"
+  },
   "scripts": {
     "test": "npx vitest --run",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "start:dev": "npx tsx src/index.ts",
+    "build": "tsup",
+    "dev": "concurrently --names \"INSPECTOR,SERVER\" --prefix-colors \"blue,green\" \"npx --yes @modelcontextprotocol/inspector\" \"npx tsx src/bin/sse.ts\"",
+    "start": "node dist/bin/sse.js",
     "clean": "rimraf dist"
   },
   "keywords": [],
@@ -17,6 +20,9 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
     "@repo/directus-sdk": "*",
+    "commander": "^13.1.0",
+    "concurrently": "^9.1.2",
+    "express": "^5.1.0",
     "rimraf": "^6.0.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3",
@@ -25,8 +31,9 @@
     "zod-to-json-schema": "^3.24.5"
   },
   "devDependencies": {
+    "@types/express": "^5.0.1",
     "@types/node": "^22.15.3",
-    "@types/ws": "^8.18.1",
+    "tsup": "^8.4.0",
     "vitest": "^3.1.2"
   }
 }

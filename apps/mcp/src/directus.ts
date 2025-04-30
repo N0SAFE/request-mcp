@@ -54,9 +54,7 @@ export const createDirectusWithDefaultUrl = (): ReturnType<
 > => {
   console.log("Directus URL:", directusUrl);
   console.log("Directus Token:", process.env.API_ADMIN_TOKEN || "JIqCg-azLH0pWOBIiAQJXDvIrWxoa2Aq");
-  return createDirectusInstance(directusUrl!).with(
-    staticToken(process.env.API_ADMIN_TOKEN! || "JIqCg-azLH0pWOBIiAQJXDvIrWxoa2Aq")
-  );
+  return createDirectusInstance(directusUrl!)
 };
 
 const directus: ReturnType<typeof createDirectusWithDefaultUrl> =
