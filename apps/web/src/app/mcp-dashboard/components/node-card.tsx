@@ -193,11 +193,18 @@ export const NodeCard: React.FC<NodeCardProps> = ({
                                 <Button
                                     type="submit"
                                     disabled={isDisabled || (!currentResponse.responseData && !currentResponse.error)}
+                                    variant={currentResponse.error ? 'destructive' : undefined}
                                 >
                                     {isSubmitting(node.content.id) ? (
-                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            {currentResponse.error ? 'Submitting Error...' : 'Submitting...'}
+                                        </>
                                     ) : (
-                                        <><Send className="mr-2 h-4 w-4" /> Submit Response</>
+                                        <>
+                                            <Send className="mr-2 h-4 w-4" />
+                                            {currentResponse.error ? 'Submit Error' : 'Submit Response'}
+                                        </>
                                     )}
                                 </Button>
                             </div>

@@ -9,6 +9,10 @@ import { useMcpData } from '@/contexts/McpDataContext'
 import { submitResponse, submitContainerStatus } from './api-service'
 import { NodeCard } from './node-card'
 import { getBadgeVariant, calculateContainerStatus } from './status-utils'
+import { DashboardViewMode } from './dashboard-view-mode'
+import { DashboardTableView } from './dashboard-table-view'
+import { DashboardListView } from './dashboard-list-view'
+import { DashboardGridView } from './dashboard-grid-view'
 import { useQueryState } from 'nuqs'
 import { Toaster } from '@repo/ui/components/shadcn/sonner'
 import { toast } from 'sonner'
@@ -26,6 +30,9 @@ export function Dashboard() {
     })
     const [search, setSearch] = useState('')
     const [filter, setFilter] = useState('') // For future advanced filtering
+
+    // View mode state
+    const [viewMode, setViewMode] = useState('card')
 
     const {
         mcpRequestHierarchy,
@@ -262,6 +269,7 @@ export function Dashboard() {
                             onChange={e => setSearch(e.target.value)}
                             className="max-w-xs"
                         />
+                        <DashboardViewMode mode={viewMode} setMode={setViewMode} />
                     </div>
                     <Tabs value={tab} onValueChange={value => setTab(value as typeof tab)} className="w-full">
                         <TabsList>
@@ -286,23 +294,36 @@ export function Dashboard() {
                                 </p>
                             )}
                             {!isLoading && !isError && filterNodes(mcpRequestHierarchy).length > 0 && (
-                                <div className="space-y-6">
-                                    {filterNodes(mcpRequestHierarchy).map((node) => (
-                                        <NodeCard
-                                            key={node.content.id}
-                                            node={node}
-                                            responses={responses}
-                                            jsonError={jsonError}
-                                            handleResponseChange={handleResponseChange}
-                                            handleErrorChange={handleErrorChange}
-                                            handleSubmit={handleSubmit}
-                                            isSubmitting={isSubmitting}
-                                            getBadgeVariant={getBadgeVariant}
-                                            level={0}
-                                            allowRequestInput={true}
-                                            mutation={mutation}
-                                        />
-                                    ))}
+                                <div>
+                                    {viewMode === 'card' && (
+                                        <div className="space-y-6">
+                                            {filterNodes(mcpRequestHierarchy).map((node) => (
+                                                <NodeCard
+                                                    key={node.content.id}
+                                                    node={node}
+                                                    responses={responses}
+                                                    jsonError={jsonError}
+                                                    handleResponseChange={handleResponseChange}
+                                                    handleErrorChange={handleErrorChange}
+                                                    handleSubmit={handleSubmit}
+                                                    isSubmitting={isSubmitting}
+                                                    getBadgeVariant={getBadgeVariant}
+                                                    level={0}
+                                                    allowRequestInput={true}
+                                                    mutation={mutation}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                    {viewMode === 'table' && (
+                                        <DashboardTableView nodes={filterNodes(mcpRequestHierarchy)} />
+                                    )}
+                                    {viewMode === 'list' && (
+                                        <DashboardListView nodes={filterNodes(mcpRequestHierarchy)} />
+                                    )}
+                                    {viewMode === 'grid' && (
+                                        <DashboardGridView nodes={filterNodes(mcpRequestHierarchy)} />
+                                    )}
                                 </div>
                             )}
                         </TabsContent>
@@ -313,23 +334,36 @@ export function Dashboard() {
                                 </p>
                             )}
                             {!isLoading && !isError && filterNodes(mcpRequestHierarchy).length > 0 && (
-                                <div className="space-y-6">
-                                    {filterNodes(mcpRequestHierarchy).map((node) => (
-                                        <NodeCard
-                                            key={node.content.id}
-                                            node={node}
-                                            responses={responses}
-                                            jsonError={jsonError}
-                                            handleResponseChange={handleResponseChange}
-                                            handleErrorChange={handleErrorChange}
-                                            handleSubmit={handleSubmit}
-                                            isSubmitting={isSubmitting}
-                                            getBadgeVariant={getBadgeVariant}
-                                            level={0}
-                                            allowRequestInput={true}
-                                            mutation={mutation}
-                                        />
-                                    ))}
+                                <div>
+                                    {viewMode === 'card' && (
+                                        <div className="space-y-6">
+                                            {filterNodes(mcpRequestHierarchy).map((node) => (
+                                                <NodeCard
+                                                    key={node.content.id}
+                                                    node={node}
+                                                    responses={responses}
+                                                    jsonError={jsonError}
+                                                    handleResponseChange={handleResponseChange}
+                                                    handleErrorChange={handleErrorChange}
+                                                    handleSubmit={handleSubmit}
+                                                    isSubmitting={isSubmitting}
+                                                    getBadgeVariant={getBadgeVariant}
+                                                    level={0}
+                                                    allowRequestInput={true}
+                                                    mutation={mutation}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                    {viewMode === 'table' && (
+                                        <DashboardTableView nodes={filterNodes(mcpRequestHierarchy)} />
+                                    )}
+                                    {viewMode === 'list' && (
+                                        <DashboardListView nodes={filterNodes(mcpRequestHierarchy)} />
+                                    )}
+                                    {viewMode === 'grid' && (
+                                        <DashboardGridView nodes={filterNodes(mcpRequestHierarchy)} />
+                                    )}
                                 </div>
                             )}
                         </TabsContent>
@@ -340,23 +374,36 @@ export function Dashboard() {
                                 </p>
                             )}
                             {!isLoading && !isError && filterNodes(mcpRequestHierarchy).length > 0 && (
-                                <div className="space-y-6">
-                                    {filterNodes(mcpRequestHierarchy).map((node) => (
-                                        <NodeCard
-                                            key={node.content.id}
-                                            node={node}
-                                            responses={responses}
-                                            jsonError={jsonError}
-                                            handleResponseChange={handleResponseChange}
-                                            handleErrorChange={handleErrorChange}
-                                            handleSubmit={handleSubmit}
-                                            isSubmitting={isSubmitting}
-                                            getBadgeVariant={getBadgeVariant}
-                                            level={0}
-                                            allowRequestInput={true}
-                                            mutation={mutation}
-                                        />
-                                    ))}
+                                <div>
+                                    {viewMode === 'card' && (
+                                        <div className="space-y-6">
+                                            {filterNodes(mcpRequestHierarchy).map((node) => (
+                                                <NodeCard
+                                                    key={node.content.id}
+                                                    node={node}
+                                                    responses={responses}
+                                                    jsonError={jsonError}
+                                                    handleResponseChange={handleResponseChange}
+                                                    handleErrorChange={handleErrorChange}
+                                                    handleSubmit={handleSubmit}
+                                                    isSubmitting={isSubmitting}
+                                                    getBadgeVariant={getBadgeVariant}
+                                                    level={0}
+                                                    allowRequestInput={true}
+                                                    mutation={mutation}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                    {viewMode === 'table' && (
+                                        <DashboardTableView nodes={filterNodes(mcpRequestHierarchy)} />
+                                    )}
+                                    {viewMode === 'list' && (
+                                        <DashboardListView nodes={filterNodes(mcpRequestHierarchy)} />
+                                    )}
+                                    {viewMode === 'grid' && (
+                                        <DashboardGridView nodes={filterNodes(mcpRequestHierarchy)} />
+                                    )}
                                 </div>
                             )}
                         </TabsContent>
