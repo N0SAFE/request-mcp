@@ -12,6 +12,7 @@
         "paths": {
             "@/*": ["./src/*"],
             "#/*": ["./*"],
+            "@repo/shadcn-table/*": ["../../packages/shadcn-table/src/*"],
             "@repo/*": ["../../packages/*"]
         },
         "target": "ES2017"

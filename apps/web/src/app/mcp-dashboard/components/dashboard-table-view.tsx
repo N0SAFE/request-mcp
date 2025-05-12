@@ -2,18 +2,12 @@
 import React from 'react'
 // Import Table components from shadcn-table package
 import {
-    Table,
-    TableHeader,
-    TableBody,
-    TableRow,
-    TableHead,
-    TableCell,
-} from '@repo/ui/components/shadcn/table'
-import {
     DataTable,
     DataTableAdvancedToolbar,
     DataTableDragHandle,
     DataTableToolbar,
+    DataTablePagination,
+    DataTableViewOptions,
 } from '@repo/shadcn-table/components'
 import {
   DataTableRowAction,
@@ -24,14 +18,13 @@ import {
   directusFilterAdapter,
   exportTableToCSV
 } from '@repo/shadcn-table/utils'
-import { ActionGeneratorOptions, TasksTableFloatingBar } from '@repo/shadcn-table/src/components/floating-bar'
-import { table } from 'console'
+import { ActionGeneratorOptions, TasksTableFloatingBar } from '@repo/shadcn-table/components/floating-bar'
 import { Archive, ArrowUp, Badge, CheckCircle2, ClipboardCopy, Download, Loader, Printer, Sheet, Star, Tag, Trash2 } from 'lucide-react'
 import { Button } from '@repo/ui/components/shadcn/button'
 import { Select, SelectTrigger, SelectContent, SelectGroup, SelectLabel, SelectSeparator, SelectItem } from '@repo/ui/components/shadcn/select'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@repo/ui/components/shadcn/tooltip'
 import { useQuery } from '@tanstack/react-query'
-import { Input } from 'postcss'
+import { Input } from '@repo/ui/components/shadcn/input'
 import { McpRequestHierarchy } from '@/contexts/McpDataContext'
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table'
 
@@ -105,8 +98,9 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
 
     const columns = React.useMemo(() => getColumns({ setRowAction }), [])
 
-    const data = tasksData?.data ?? []
-    const pageCount = tasksData?.pageCount ?? -1
+    // Use the flat data from nodes for the table
+    const data = flat
+    const pageCount = 1 // Only one page since all data is loaded at once
 
     // Transform filters to proper column filters for the table
     const columnFilters = React.useMemo(() => {
@@ -823,94 +817,55 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
     }, [])
 
     return (
-        <>
-            <div className="relative">
-                {(isFetching || isPending) && (
-                    <div className="bg-background/50 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-                        <Loader className="h-6 w-6 animate-spin" />
-                    </div>
-                )}
-                <div className="mb-4 flex items-center justify-between">
-                    <TasksTableToolbarActions table={table} />
-                    <div className="flex items-center space-x-2">
-                        <span className="text-muted-foreground text-sm">
-                            Row reordering:
-                        </span>
-                        <Switch
-                            checked={reorderableRows}
-                            onCheckedChange={setReorderableRows}
-                            aria-label="Toggle row reordering"
-                        />
-                    </div>
+        <div className="relative">
+            {isPending && (
+                <div className="bg-background/50 absolute inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <Loader className="h-6 w-6 animate-spin" />
                 </div>
-                <DataTable
-                    table={table}
-                    loadingRows={isLoading ? [] : loadingRows}
-                    enableRowReordering={reorderableRows}
-                    onRowReorder={handleRowReorder}
-                    floatingBar={
-                        enableFloatingBar ? (
-                            <TasksTableFloatingBar
-                                table={table}
-                                actionGenerator={generateActions}
-                                helpers={{ tag, setTag }}
-                                onLoadingRowsChange={handleLoadingRowsChange}
-                            />
-                        ) : null
-                    }
-                >
-                    {enableAdvancedTable ? (
-                        <DataTableAdvancedToolbar
-                            table={table}
-                            shallow={false}
-                            instance={filtersInstance}
-                            onFiltersChange={(filters) => {
-                                setFilters(filters)
-                            }}
-                            onJoinOperatorChange={(operator) => {
-                                setOperator(operator)
-                            }}
-                            filters={filters}
-                            joinOperator={operator}
-                        />
-                    ) : (
-                        <DataTableToolbar
-                            table={table}
-                            instance={filtersInstance}
-                            filters={filters}
-                            joinOperator={operator}
-                            onFilterChange={(filters) => {
-                                setFilters(filters)
-                            }}
-                            onJoinOperatorChange={(operator) => {
-                                setOperator(operator)
-                            }}
-                        />
-                    )}
-                </DataTable>
-                <UpdateTaskSheet
-                    open={rowAction?.type === 'update'}
-                    onOpenChange={(open) =>
-                        setRowAction((current) =>
-                            open && current?.type === 'update' ? current : null
-                        )
-                    }
-                    task={rowAction?.row?.original ?? null}
-                />
-                <DeleteTasksDialog
-                    open={rowAction?.type === 'delete'}
-                    onOpenChange={(open) =>
-                        setRowAction((current) =>
-                            open && current?.type === 'delete' ? current : null
-                        )
-                    }
-                    tasks={
-                        rowAction?.row?.original ? [rowAction.row.original] : []
-                    }
-                    showTrigger={false}
-                    onSuccess={() => rowAction?.row?.toggleSelected(false)}
-                />
+            )}
+            <div className="mb-4 flex items-center justify-between">
+                {/* You may want to add a toolbar here if needed */}
+                <div className="flex items-center space-x-2">
+                    <span className="text-muted-foreground text-sm">
+                        Row reordering:
+                    </span>
+                    {/* You may want to use a Switch component from your UI library */}
+                    <input
+                        type="checkbox"
+                        checked={reorderableRows}
+                        onChange={e => setReorderableRows(e.target.checked)}
+                        aria-label="Toggle row reordering"
+                    />
+                </div>
             </div>
-        </>
+            <DataTable
+                table={table}
+                loadingRows={loadingRows}
+                enableRowReordering={reorderableRows}
+                onRowReorder={handleRowReorder}
+                floatingBar={
+                    <TasksTableFloatingBar
+                        table={table}
+                        actionGenerator={generateActions}
+                        helpers={{ tag, setTag }}
+                        onLoadingRowsChange={handleLoadingRowsChange}
+                    />
+                }
+            >
+                <DataTableToolbar
+                    table={table}
+                    instance={filtersInstance}
+                    filters={filters}
+                    joinOperator={operator}
+                    onFilterChange={setFilters}
+                    onJoinOperatorChange={setOperator}
+                />
+                <div className="flex items-center justify-between py-2">
+                    <DataTableViewOptions table={table} />
+                    <DataTablePagination table={table} />
+                </div>
+            </DataTable>
+            {/* Placeholders for update and delete dialogs if needed */}
+        </div>
     )
 }

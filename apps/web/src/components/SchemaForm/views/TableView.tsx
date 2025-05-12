@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@repo/shadcn-table/src/components/ui/table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@repo/ui/components/shadcn/table';
 
 interface TableViewProps {
   schema: any;

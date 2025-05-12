@@ -20,7 +20,7 @@ const nextConfig = {
         },
     },
     reactStrictMode: true,
-    transpilePackages: ['@repo/ui'],
+    transpilePackages: ['@repo/ui', '@repo/shadcn-table'],
     experimental: {
         // ppr: 'incremental',
         reactCompiler: true,
