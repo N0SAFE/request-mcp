@@ -3,7 +3,7 @@ import directus from "./directus";
 import { ApplyFields } from "@repo/directus-sdk/indirectus/utils";
 
 // Define the possible input types for actual requests
-export type RequestInputType = 'text' | 'schema' | 'select' | 'multi-select' | 'boolean' | 'json';
+export type RequestInputType = 'schema';
 
 // Define the structure for select/multi-select options
 export interface SelectOption {

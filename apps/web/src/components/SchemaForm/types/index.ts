@@ -62,7 +62,7 @@ export type JsonSchema = {
 export interface SchemaFormProps {
     schema: JsonSchema
     value: any
-    onChange: (value: any) => void
+    onSubmit: (value: any) => void
     disabled?: boolean
     parentKey?: string
 }

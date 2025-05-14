@@ -23,6 +23,7 @@
     "openapi:html": "npx --yes @redocly/cli build-docs openapi-docs.yml"
   },
   "dependencies": {
+    "@dmitryrechkin/json-schema-to-zod": "^1.0.1",
     "@million/lint": "^1.0.8",
     "@next/bundle-analyzer": "15.2.0",
     "@repo/directus-sdk": "*",
@@ -46,6 +47,7 @@
     "query-string": "^9.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.56.3",
     "react-scan": "^0.1.1",
     "rimraf": "^6.0.1",
     "sass": "^1.69.5",

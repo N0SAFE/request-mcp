@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     // Basic validation (adapt as needed for McpRequestItem properties)
-    if (!body.toolName || !body.args || !body.inputType || !body.webhookUrl) {
+    if (!body.toolName || !body.args || !body.webhookUrl) {
       return NextResponse.json({ error: 'Missing required fields for request item' }, { status: 400 });
     }
 
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       name: body.toolName,
       args: body.args,
       prompt: body.prompt,
-      inputType: body.inputType,
+      inputType: 'schema',
       inputOptions: body.inputOptions,
       inputSchema: body.inputSchema,
       timestamp: Date.now(),

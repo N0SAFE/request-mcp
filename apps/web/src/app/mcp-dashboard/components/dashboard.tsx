@@ -41,6 +41,14 @@ export function Dashboard() {
         error: queryError,
         getRequestById,
     } = useMcpData()
+    
+
+    console.log({
+        mcpRequestHierarchy,
+        isLoading,
+        isError,
+        queryError,
+    })
 
     const mutation = useMutation<
         any,
@@ -131,11 +139,8 @@ export function Dashboard() {
             return
         }
 
-        // Handle request submission with JSON validation
-        const inputType = requestDetails.inputType as string
-        if ((inputType === 'json' || inputType === 'schema') && 
-            typeof finalResponseData === 'string' && 
-            finalResponseData.trim() !== '') {
+        // Always treat as schema (parse if string)
+        if (typeof finalResponseData === 'string' && finalResponseData.trim() !== '') {
             try {
                 finalResponseData = JSON.parse(finalResponseData)
             } catch (parseError: any) {

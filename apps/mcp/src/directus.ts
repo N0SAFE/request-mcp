@@ -1,4 +1,4 @@
-import { Schema, createTypedClient } from "@repo/directus-sdk/client";
+import { Schema, TypedClient, bindings, schema } from "@repo/directus-sdk/client";
 import {
   graphql,
   realtime,
@@ -10,14 +10,26 @@ import {
   rest,
   staticToken,
 } from "@repo/directus-sdk";
+import * as DirectusSDK from "@directus/sdk";
+import type * as Directus from "@directus/sdk";
 import WebSocket from "ws";
+
+export function createDirectusWithTypes(
+  url: string,
+  options?: DirectusSDK.ClientOptions
+): Directus.DirectusClient<Schema> & Directus.RestClient<Schema> & TypedClient {
+  return DirectusSDK.createDirectus<Schema>(url, options)
+    .with(bindings())
+    .with(DirectusSDK.rest())
+    .with(schema());
+}
 
 export const createDefaultDirectusInstance = (
   url: string
-): ReturnType<typeof createTypedClient> &
+): ReturnType<typeof createDirectusWithTypes> &
   WebSocketClient<Schema> &
   GraphqlClient<Schema> => {
-  return createTypedClient(url, {
+  return createDirectusWithTypes(url, {
     globals: {
       WebSocket: WebSocket,
     }

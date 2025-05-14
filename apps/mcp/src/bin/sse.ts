@@ -36,9 +36,9 @@ app.post(
     }
     console.log(req.header("Authorization"));
     try {
-      const me = await directus.DirectusUser.withToken(
+      const me = await directus.DirectusUser.Me.withToken(
         req.header("Authorization")?.replace("Bearer ", "")!
-      ).Me.read({
+      ).read({
         fields: ["*"],
       });
       console.log(me)

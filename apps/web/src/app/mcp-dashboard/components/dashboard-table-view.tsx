@@ -1,47 +1,61 @@
 // Table view for dashboard using shadcn-table
 import React from 'react'
 // Import Table components from shadcn-table package
-import {
-    DataTable,
-    DataTableAdvancedToolbar,
-    DataTableDragHandle,
-    DataTableToolbar,
-    DataTablePagination,
-    DataTableViewOptions,
-} from '@repo/shadcn-table/components'
-import {
-  DataTableRowAction,
-  ExtendedSortingState,
-  Filter
-} from '@repo/shadcn-table/types'
-import {
-  directusFilterAdapter,
-  exportTableToCSV
-} from '@repo/shadcn-table/utils'
-import { ActionGeneratorOptions, TasksTableFloatingBar } from '@repo/shadcn-table/components/floating-bar'
-import { Archive, ArrowUp, Badge, CheckCircle2, ClipboardCopy, Download, Loader, Printer, Sheet, Star, Tag, Trash2 } from 'lucide-react'
+import { DataTable } from '@repo/shadcn-table/components/data-table';
+import { DataTableToolbar } from '@repo/shadcn-table/components/data-table-toolbar';
+import { DataTablePagination } from '@repo/shadcn-table/components';
+import { DataTableViewOptions } from '@repo/shadcn-table/components/data-table-view-options';
+import { DataTableDragHandle } from '@repo/shadcn-table/components/data-table-drag-handle';
+import { ActionGeneratorOptions, TasksTableFloatingBar } from '@repo/shadcn-table/components/floating-bar';
+import { DataTableRowAction, ExtendedSortingState, Filter } from '@repo/shadcn-table/types';
+import { directusFilterAdapter, exportTableToCSV } from '@repo/shadcn-table/utils';
+import { Archive, ArrowUp, CheckCircle2, ClipboardCopy, Download, Loader, Printer, Star, Tag, Trash2 } from 'lucide-react';
 import { Button } from '@repo/ui/components/shadcn/button'
 import { Select, SelectTrigger, SelectContent, SelectGroup, SelectLabel, SelectSeparator, SelectItem } from '@repo/ui/components/shadcn/select'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@repo/ui/components/shadcn/tooltip'
 import { useQuery } from '@tanstack/react-query'
 import { Input } from '@repo/ui/components/shadcn/input'
+import { Badge } from '@repo/ui/components/shadcn/badge'
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@repo/ui/components/shadcn/sheet'
 import { McpRequestHierarchy } from '@/contexts/McpDataContext'
-import { getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useFilters } from '@repo/shadcn-table/hooks/use-filters';
 
 export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
-    // Flatten nodes for table view (only requests, not containers)
-    const flattenNodes = (nodes) => {
-        let result = []
-        for (const node of nodes) {
-            if (node.type === 'request') {
-                result.push(node)
-            } else if (node.type === 'container' && node.children) {
-                result = result.concat(flattenNodes(node.children))
-            }
-        }
-        return result
+    const toast = {
+        error: (message: string) => {
+            console.error(message);
+        },
+        success: (message: string) => {
+            console.log(message);
+        },
     }
-    const flat = flattenNodes(nodes)
+
+    const deleteTasks = async ({ ids }: { ids: string[] }) => {
+        // Mock API call to delete tasks
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({ error: null });
+            }, 1000);
+        });
+    }
+
+    const updateTasks = async ({ ids, ...updates }: { ids: string[]; [key: string]: any }) => {
+        // Mock API call to update tasks
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({ error: null });
+            }, 1000);
+        });
+    }
+
+    const generateId = (node: McpRequestHierarchy) => {
+        return `${node.type}-${node.content.id}`;
+    }
+
+    const toSentenceCase = (str: string) => {
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
 
     // States
     const [pageIndex, setPageIndex] = React.useState(0)
@@ -57,7 +71,7 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
         Filter<typeof directusFilterAdapter>[]
     >([])
     const [operator, setOperator] = React.useState<'and' | 'or'>('and')
-    const [sorting, setSorting] = React.useState<ExtendedSortingState<McpRequestHierarchy>>()
+    const [sorting, setSorting] = React.useState<ExtendedSortingState<McpRequestHierarchy>>([])
 
     // Update the delete handler
     const handleDelete = React.useCallback(
@@ -67,39 +81,46 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
             if (result.error) {
                 toast.error(result.error)
             } else {
-                removeFromCache(ids)
                 toast.success('Tasks deleted successfully')
                 table.toggleAllRowsSelected(false)
             }
             setLoadingRows([])
         },
-        [removeFromCache]
+        []
     )
 
     // Update the update handler
     const handleUpdate = React.useCallback(
-        async (ids: string[], updates: Partial<Task>) => {
+        async (ids: string[], updates: Partial<McpRequestHierarchy>) => {
             setLoadingRows(ids)
             const result = await updateTasks({ ids, ...updates })
             if (result.error) {
                 toast.error(result.error)
             } else {
-                // Invalidate the query instead of manual cache update for updates
-                await queryClient.invalidateQueries({ queryKey: ['tasks'] })
                 toast.success('Tasks updated successfully')
             }
             setLoadingRows([])
         },
-        [queryClient]
+        []
     )
 
     const [rowAction, setRowAction] =
         React.useState<DataTableRowAction<McpRequestHierarchy> | null>(null)
 
-    const columns = React.useMemo(() => getColumns({ setRowAction }), [])
+    // You should define your columns for the table here, or import them if you have a columns definition file
+    // Example: import { getColumns } from './columns';
+    // const columns = React.useMemo(() => getColumns({ setRowAction }), []);
+    // For now, you must define columns for your McpRequestHierarchy data structure
+    const columns = React.useMemo(() => [
+      // Example column definition:
+      // {
+      //   accessorKey: 'id',
+      //   header: 'ID',
+      //   cell: info => info.getValue(),
+      // },
+      // Add your actual columns here
+    ], [setRowAction]);
 
-    // Use the flat data from nodes for the table
-    const data = flat
     const pageCount = 1 // Only one page since all data is loaded at once
 
     // Transform filters to proper column filters for the table
@@ -191,7 +212,7 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
     }, [])
 
     const table = useReactTable({
-        data,
+        data: nodes,
         columns: columnsWithDragHandle,
         getCoreRowModel: getCoreRowModel(),
         pageCount: pageCount,
@@ -221,20 +242,20 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
                 setPageSize(updater.pageSize)
             }
         },
-        getRowId: (originalRow) => originalRow.id,
+        getRowId: generateId,
         onSortingChange: (updater) => {
             if (typeof updater === 'function') {
                 const newSortingState = updater(sorting)
-                setSorting(newSortingState as ExtendedSortingState<Task>)
+                setSorting(newSortingState as ExtendedSortingState<McpRequestHierarchy>)
             } else {
-                setSorting(updater as ExtendedSortingState<Task>)
+                setSorting(updater as ExtendedSortingState<McpRequestHierarchy>)
             }
         },
     })
 
     // Define the action generator function that returns JSX
     const generateActions = React.useCallback(
-        (options: ActionGeneratorOptions<Task>): React.ReactNode => {
+        (options: ActionGeneratorOptions<McpRequestHierarchy>): React.ReactNode => {
             const {
                 table,
                 helpers = {},
@@ -413,7 +434,7 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
             return (
                 <React.Fragment>
                     {/* Status dropdown */}
-                    <DropdownActionButton
+                    {/* <DropdownActionButton
                         id="update-status"
                         icon={CheckCircle2}
                         label="Update status"
@@ -442,10 +463,10 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
                                 setLoadingRows([]) // Clear loading state when done
                             })
                         }}
-                    />
+                    /> */}
 
                     {/* Priority dropdown */}
-                    <DropdownActionButton
+                    {/* <DropdownActionButton
                         id="update-priority"
                         icon={ArrowUp}
                         label="Update priority"
@@ -474,7 +495,7 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
                                 setLoadingRows([]) // Clear loading state when done
                             })
                         }}
-                    />
+                    /> */}
 
                     <ActionButton
                         id="export"
@@ -572,7 +593,7 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
                               )
                               .map((col) => {
                                   const value =
-                                      row.original[col.id as keyof Task]
+                                      row.original[col.id as keyof McpRequestHierarchy]
                                   return `<td>${value !== null && value !== undefined ? value : ''}</td>`
                               })
                               .join('')}
@@ -787,7 +808,7 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
                             const selectedRows =
                                 table.getFilteredSelectedRowModel().rows
                             const ids = selectedRows.map(
-                                (row) => row.original.id
+                                (row) => generateId(row.original)
                             )
 
                             deleteTasks({
@@ -815,6 +836,8 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
     const handleLoadingRowsChange = React.useCallback((rowIds: string[]) => {
         setLoadingRows(rowIds)
     }, [])
+
+    console.log(nodes)
 
     return (
         <div className="relative">
@@ -862,7 +885,7 @@ export function DashboardTableView({ nodes }: {nodes: McpRequestHierarchy[]}) {
                 />
                 <div className="flex items-center justify-between py-2">
                     <DataTableViewOptions table={table} />
-                    <DataTablePagination table={table} />
+                    {/* <DataTablePagination table={table} /> */}
                 </div>
             </DataTable>
             {/* Placeholders for update and delete dialogs if needed */}

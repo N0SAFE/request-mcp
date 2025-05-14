@@ -1,3 +1,5 @@
+import { Collections } from "@repo/directus-sdk/client";
+import { ApplyFields } from "@repo/directus-sdk/indirectus/utils";
 import * as z from "zod";
 import { ZodRawShape } from "zod";
 
@@ -24,7 +26,26 @@ export interface ToolDefinition {
 }
 
 export type ToolHandler<T extends ToolDefinition> = (
-  params: z.infer<T["inputSchema"]>
+  params: z.infer<T["inputSchema"]>,
+  ...[req, opts]: [
+    {
+      method: "tools/call";
+      params: {
+        _meta: Record<string, unknown>;
+        name: string;
+        arguments: Record<string, unknown>;
+      };
+    },
+    {
+      signal: AbortSignal;
+      sessionId: string;
+      _meta: unknown;
+      sendNotification: (type: string, payload: unknown) => void;
+      sendRequest: () => Promise<unknown>;
+      authInfo: AuthInfo;
+      requestId: string;
+    },
+  ]
 ) => Promisable<{
   content: {
     type: string;
@@ -33,8 +54,11 @@ export type ToolHandler<T extends ToolDefinition> = (
 }>;
 
 export type ToolCapability<T extends ToolDefinition = ToolDefinition> = {
-    definition: T;
-    handler: ToolHandler<T>;
+  definition: T;
+  handler: ToolHandler<T>;
+  meta?: {
+    canBeEnabled?: (authInfo: AuthInfo) => Promisable<boolean>;
+  };
 };
 
 export type Promisable<T> = T | Promise<T>;
@@ -42,10 +66,19 @@ export type Promisable<T> = T | Promise<T>;
 export type McpConfig = {
   toolsetConfig: any;
   availableTools: string[];
-  dynamicToolDiscovery: {
-    enabled: true;
-    defaultEnabledToolsets: string[];
-  } | {
-    enabled: false;
-  };
+  dynamicToolDiscovery:
+    | {
+        enabled: true;
+        defaultEnabledToolsets: string[];
+      }
+    | {
+        enabled: false;
+      };
+};
+
+export type AuthInfo = {
+  token: string;
+  clientId: string;
+  scopes: Array<unknown>;
+  extra: ApplyFields<Collections.DirectusUser>;
 };

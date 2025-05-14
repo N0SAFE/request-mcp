@@ -345,236 +345,6 @@ fields:
       foreign_key_table: null
       foreign_key_column: null
   - collection: request
-    field: args
-    type: json
-    meta:
-      collection: request
-      conditions: null
-      display: null
-      display_options: null
-      field: args
-      group: null
-      hidden: false
-      interface: null
-      note: null
-      options: null
-      readonly: false
-      required: true
-      sort: 8
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: args
-      table: request
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: false
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: request
-    field: prompt
-    type: string
-    meta:
-      collection: request
-      conditions: null
-      display: null
-      display_options: null
-      field: prompt
-      group: null
-      hidden: false
-      interface: input
-      note: null
-      options: null
-      readonly: false
-      required: false
-      sort: 9
-      special: null
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: prompt
-      table: request
-      data_type: varchar
-      default_value: null
-      max_length: 255
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: request
-    field: inputType
-    type: string
-    meta:
-      collection: request
-      conditions: null
-      display: null
-      display_options: null
-      field: inputType
-      group: null
-      hidden: false
-      interface: select-dropdown
-      note: null
-      options:
-        choices:
-          - text: text
-            value: text
-          - text: schema
-            value: schema
-          - text: select
-            value: select
-          - text: multi-select
-            value: multi-select
-          - text: boolean
-            value: boolean
-          - text: json
-            value: json
-      readonly: false
-      required: true
-      sort: 10
-      special: null
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: inputType
-      table: request
-      data_type: varchar
-      default_value: null
-      max_length: 255
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: false
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: request
-    field: selectOptions
-    type: json
-    meta:
-      collection: request
-      conditions: null
-      display: null
-      display_options: null
-      field: selectOptions
-      group: null
-      hidden: false
-      interface: list
-      note: null
-      options:
-        fields:
-          - field: value
-            meta:
-              field: value
-              interface: input
-              required: true
-              type: string
-              width: half
-            name: value
-            type: string
-          - field: label
-            meta:
-              field: label
-              interface: input
-              required: true
-              type: string
-              width: half
-            name: label
-            type: string
-      readonly: false
-      required: false
-      sort: 11
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: selectOptions
-      table: request
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: request
-    field: schema
-    type: json
-    meta:
-      collection: request
-      conditions: null
-      display: null
-      display_options: null
-      field: schema
-      group: null
-      hidden: false
-      interface: null
-      note: null
-      options: null
-      readonly: false
-      required: false
-      sort: 12
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: schema
-      table: request
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: request
     field: name
     type: string
     meta:
@@ -629,7 +399,7 @@ fields:
       options: null
       readonly: false
       required: false
-      sort: 13
+      sort: 8
       special: null
       translations: null
       validation: null
@@ -668,7 +438,7 @@ fields:
       options: null
       readonly: false
       required: false
-      sort: 14
+      sort: 10
       special:
         - cast-json
       translations: null
@@ -708,7 +478,7 @@ fields:
       options: null
       readonly: false
       required: false
-      sort: 15
+      sort: 11
       special: null
       translations: null
       validation: null
@@ -720,6 +490,88 @@ fields:
       data_type: varchar
       default_value: null
       max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: request
+    field: test
+    type: string
+    meta:
+      collection: request
+      conditions: null
+      display: null
+      display_options: null
+      field: test
+      group: null
+      hidden: false
+      interface: input-code
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 12
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: test
+      table: request
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: request
+    field: schema
+    type: json
+    meta:
+      collection: request
+      conditions: null
+      display: null
+      display_options: null
+      field: schema
+      group: null
+      hidden: false
+      interface: input-code
+      note: null
+      options:
+        language: JSON
+        lineNumber: false
+        template: ''
+      readonly: false
+      required: true
+      sort: 9
+      special:
+        - cast-json
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: schema
+      table: request
+      data_type: json
+      default_value: null
+      max_length: null
       numeric_precision: null
       numeric_scale: null
       is_nullable: true
@@ -1377,7 +1229,7 @@ relations:
       one_collection: null
       one_collection_field: collection
       one_deselect_action: nullify
-      one_field: null
+      one_field: parent
       sort_field: null
   - collection: request_container_children
     field: request_container_id
