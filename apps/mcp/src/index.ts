@@ -415,6 +415,59 @@ export class RequestMcpServer extends McpServer {
           : tools,
       },
       dynamicToolDiscovery: config.dynamicToolDiscovery || { enabled: true },
+      instructions: `
+# Using the MCP Request Server for Interactive Workflows
+
+You have access to an MCP request server that allows you to interactively gather information or actions from users or systems. Use this server whenever you need additional context, clarification, or user input that cannot be determined from the current data or codebase alone.
+
+## When to Use the MCP Request Server
+
+Use the MCP request server in the following scenarios:
+
+- When you need to prompt the user for information (e.g., preferences, missing parameters, choices).
+- When you need to orchestrate a sequence of user/system actions that require responses.
+- When you want to group multiple related requests and manage them as a batch.
+
+## How to Use the MCP Request Server
+
+Follow this process to interact with the MCP request server:
+
+1. **Register a Request:**
+   - Use the appropriate tool (e.g., \`register_request\`) to create a prompt or action for the user/system. This returns a request ID.
+2. **Register a Container (if needed):**
+   - If you need to group multiple requests, use a container tool (e.g., \`register_container\`).
+3. **Wait for Completion:**
+   - Use the corresponding wait tool (e.g., \`request_wait\` or \`container_wait\`) with the returned ID to block until the request or container is completed or an error occurs.
+   - For convenience, you can use \`register_request_wait\` or \`register_container_wait\` to both register and wait for completion in a single step.
+4. **Provide Valid Input:**
+   - Always provide valid input objects as described in the tool schemas.
+5. **Handle Errors:**
+   - Handle errors as returned by the tool responses.
+
+MCP Request Server usage instructions:
+
+Core concepts:
+- A request is a single, structured prompt or action for the user or system to respond to. It represents one unit of work.
+- A request container is a group (batch) of requests, or even other containers, allowing you to manage and orchestrate multiple related requests together.
+- This MCP server is specifically designed for when the LLM needs additional information about one or multiple variables and requires user input, either immediately or in a delayed fashion.
+
+How tools work:
+- There are tools to register (create), wait for, and manage both requests and containers.
+- When you register a request or container (using registerRequestTool or registerContainerTool), it is created and an ID is returned immediately. This does NOT wait for the request or container to be completed or processed.
+- To obtain the result or completion status, you must call the corresponding wait tool (requestWaitTool or containerWaitTool) with the returned ID. You should always await the result if you need the outcome before proceeding.
+- For convenience, register*WaitTool variants (like registerRequestWaitTool) will both register and wait for completion in a single step.
+
+Usage workflow:
+1. Register a request or container using the appropriate tool when you need additional information from the user.
+2. If you need the result immediately, call the corresponding wait tool with the returned ID and await completion.
+3. Alternatively, use a register*WaitTool to register and wait in one step for immediate responses.
+4. For delayed responses, you can register a request and retrieve the result later using the wait tools.
+
+Important:
+- All tools require valid input objects as described in their schemas.
+- Handle errors as returned by the tool responses.
+- Use this server whenever you need to gather more contextual information about variables from the user.
+`
     });
   }
 }

@@ -23,8 +23,10 @@ export const submitResponse = async ({
     )
 
     try {
-        const updatedItem = await directus.Requests.update([requestId], payload)
-        return updatedItem[0]
+        const updatedItem = await directus.Request.update(requestId, payload, {
+            fields: ['id', 'status', 'responseData', 'errorMessage'],
+        })
+        return updatedItem
     } catch (sdkError: any) {
         console.error('Directus SDK Error updating request:', sdkError)
         const message =
@@ -55,8 +57,10 @@ export const submitContainerStatus = async ({
             delete payload[key as keyof typeof payload]
     )
     try {
-        const updatedItem = await directus.RequestContainers.update([containerId], payload)
-        return updatedItem[0]
+        const updatedItem = await directus.RequestContainer.update(containerId, payload, {
+            fields: ['id', 'status', 'errorMessage'],
+        })
+        return updatedItem
     } catch (sdkError: any) {
         console.error('Directus SDK Error updating container:', sdkError)
         const message =

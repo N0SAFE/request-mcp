@@ -1,3 +1,5 @@
+import { UseFormReturn } from "react-hook-form"
+
 export type LayoutType = 'default' | 'flex' | 'grid' | 'columns' | 'tabs'
 
 export type LayoutOptions = {
@@ -61,8 +63,6 @@ export type JsonSchema = {
 
 export interface SchemaFormProps {
     schema: JsonSchema
-    value: any
-    onSubmit: (value: any) => void
     disabled?: boolean
     parentKey?: string
 }

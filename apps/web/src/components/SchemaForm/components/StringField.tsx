@@ -26,8 +26,6 @@ export function StringField({ schema, value, onChange, disabled }: StringFieldPr
         return <SelectField schema={schema} value={value} onChange={onChange} disabled={disabled} />
     }
 
-    console.log('StringField', schema, value, onChange, disabled)
-
     switch (schema.format) {
         case 'date':
             return <DateField schema={schema} value={value} onChange={onChange} disabled={disabled} />

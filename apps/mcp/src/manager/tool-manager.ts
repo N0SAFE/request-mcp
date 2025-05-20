@@ -9,8 +9,6 @@ import {
 } from "../types";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { Collections } from "@repo/directus-sdk/client";
-import { ApplyFields } from "@repo/directus-sdk/indirectus/utils";
 
 export type ToolListResponse = {
   tools: (Omit<ToolDefinition, "inputSchema"> & {

@@ -1,16 +1,12 @@
 import * as z from "zod";
 import { createToolDefinition } from "./utils/tools";
-import { Collections } from "@repo/directus-sdk/client";
-import zodToJsonSchema from "zod-to-json-schema";
 
 // Define the static types first to resolve circular references
 export type RequestType = {
   name: string;
   args?: any;
   prompt?: string;
-  inputType: "json" | "boolean" | "multi-select" | "select" | "schema" | "text";
-  selectOptions?: any;
-  schema?: any;
+  schema: any; // now required
   description?: string;
   responseData?: any;
   errorMessage?: string;
@@ -32,58 +28,56 @@ export interface RequestContainerType {
   errorMessage?: string;
 }
 
+// Recursive type for container children
+export interface RequestContainerChildType {
+  request_container_id?: RequestContainerType;
+  item?: RequestContainerType | RequestType;
+  collection?: string;
+  children?: RequestContainerChildType[];
+}
+
+// Type for container
+export interface RequestContainerType {
+  children: RequestContainerChildType[];
+  name: string;
+  description?: string;
+  errorMessage?: string;
+}
+
 // Zod schema for Collections.Request
 export const RequestSchema = z.object({
-  name: z.string(),
-  args: z
-    .any()
-    .describe(
-      "The additional arguments for the request. This is a JSON object."
-    ),
-  prompt: z.string().optional(),
-  inputType: z.enum([
-    "json",
-    "boolean",
-    "multi-select",
-    "select",
-    "schema",
-    "text",
-  ]),
-  selectOptions: z.any().optional(),
-  schema: z.any().optional(),
-  description: z.string().optional(),
-  responseData: z.any().optional(),
-  errorMessage: z.string().optional(),
-});
+  name: z.string().describe("The name of the request."),
+  prompt: z.string().optional().describe("The prompt for the request, if any."),
+  schema: z.any().describe("a not null object JSON schema describing the expected input/output for the request."),
+  description: z.string().optional().describe("A description of the request."),
+}).describe("Schema for a single request definition. the schema property is a JSON schema describing the expected output for the request. this field should always be set to request the user what data you want them to send you.");
 
 // Zod schema for Collections.RequestContainerChildren (recursive, fixed)
 export const RequestContainerChildrenSchema: z.ZodType<RequestContainerChildType> =
   z.lazy(() =>
     z.object({
-      request_container_id: RequestContainerSchema.optional(),
-      item: z
-        .union([RequestContainerSchema.optional(), RequestSchema.optional()])
-        .optional(),
-      collection: z.string().optional(),
-      children: z.array(RequestContainerChildrenSchema).optional(),
-    })
+      request_container_id: z.lazy(() => RequestContainerSchema).optional().describe("Reference to a nested request container, if any."),
+      item: z.union([
+        z.lazy(() => RequestContainerSchema),
+        RequestSchema
+      ]).optional().describe("The item, which can be a request or a nested container."),
+      collection: z.string().optional().describe("The collection name, if this child is part of a collection."),
+      children: z.array(z.lazy(() => RequestContainerChildrenSchema)).optional().describe("Nested children of this container child."),
+    }).describe("Schema for a child of a request container.") as z.ZodType<RequestContainerChildType>
   );
 
 // Zod schema for Collections.RequestContainer
-export const RequestContainerSchema: z.ZodType<RequestContainerType> = z.lazy(
-  () =>
-    z.object({
-      children: z.array(RequestContainerChildrenSchema),
-      name: z.string(),
-      description: z.string().optional(),
-      errorMessage: z.string().optional(),
-    })
-);
+export const RequestContainerSchema = z.object({
+  children: z.array(RequestContainerChildrenSchema).describe("The children of this request container."),
+  name: z.string().describe("The name of the request container."),
+  description: z.string().optional().describe("A description of the request container."),
+}).describe("Schema for a request container definition.");
+
 
 const requestWaitTool = createToolDefinition({
   name: "request_wait",
   description:
-    "Waits for a request by ID to reach 'completed' or 'error' status, then returns the response as JSON.",
+    "Waits for a request by ID to reach 'completed' or 'error' status, then returns the response as JSON. This tool always waits for the response automatically and returns the requested data when available.",
   inputSchema: z.object({
     requestId: z.string().describe("The ID of the request to wait for."),
   }),
@@ -92,7 +86,7 @@ const requestWaitTool = createToolDefinition({
 const containerWaitTool = createToolDefinition({
   name: "container_wait",
   description:
-    "Waits for a container by ID to reach 'completed' or 'error' status, then returns the container and all its children as JSON.",
+    "Waits for a container by ID to reach 'completed' or 'error' status, then returns the container and all its children as JSON. This tool always waits for the response automatically and returns the requested data when available.",
   inputSchema: z.object({
     containerId: z.string().describe("The ID of the container to wait for."),
   }),
@@ -101,26 +95,26 @@ const containerWaitTool = createToolDefinition({
 const registerRequestTool = createToolDefinition({
   name: "register_request",
   description:
-    "Registers a request for frontend resolution, returns immediately with API response.",
+    "Registers a request for frontend resolution and returns immediately with an API response containing the request ID. To obtain the requested data, you must later use the request_wait tool with the returned request ID.",
   inputSchema: RequestSchema,
 });
 
 const registerContainerTool = createToolDefinition({
   name: "register_container",
   description:
-    "Registers a container for frontend resolution, returns immediately with API response.",
+    "Registers a container for frontend resolution and returns immediately with an API response containing the container ID. To obtain the requested data, you must later use the container_wait tool with the returned container ID.",
   inputSchema: RequestContainerSchema,
 });
 
 const registerRequestWaitTool = createToolDefinition({
   name: "register_request_wait",
-  description: "Registers a request, then waits for its completion or error.",
-  inputSchema: RequestSchema,
+  description: "Registers a request, then waits for its completion or error. This tool always waits for the response automatically and returns the requested data when available. You must always provide a 'schema' property in your request, which should be a JSON schema object describing the exact structure of data you expect to receive in response.",
+  inputSchema: RequestSchema
 });
 
 const registerContainerWaitTool = createToolDefinition({
   name: "register_container_wait",
-  description: "Registers a container, then waits for its completion or error.",
+  description: "Registers a container, then waits for its completion or error. This tool always waits for the response automatically and returns the requested data when available. For each child, you must always provide a 'schema' property in your request, which should be a JSON schema object describing the exact structure of data you expect to receive in response.",
   inputSchema: RequestContainerSchema,
 });
 
